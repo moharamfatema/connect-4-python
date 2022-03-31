@@ -13,24 +13,6 @@ if current_tick > next_tick:
 
 ## Heuristic ideas
 
-- Basic: count the number of fours - my opponent's fours
-- Count the number of four steps you can go without being interrupted by an opponent's coin, the number of possible fours I can fill in the future - the thame for my opponent. It is redundant to count completely empty fours.
-=======
-## Delaying inside the game loop
-
-```python
-current_tick = 0
-next_tick = 0
-
-# inside the game loop
-current_tick = pygame.time.get_ticks()
-if current_tick > next_tick:
-    next_tick += 200 # interval
-    # do something you need to repeat slowly
-```
-
-## Heuristic ideas
-
 - Basic: count `the number of fours - my opponent's fours`
 - Count `the number of four steps you can go without being interrupted by an opponent's coin, the number of possible fours I can fill in the future - the same for my opponent`. It is redundant to count completely empty fours.  
     - But now there's no difference between a state with 4 coins in a row , and another with one coin and 3 empty spaces in a row.
@@ -61,4 +43,3 @@ if current_tick > next_tick:
     > this heuristic is admissible for a Max node. May a Min node use it ?
     >
     > this works for fours in a row, does it work for columns and diagonals?
->>>>>>> 71681a2d3b69095fd92a9bb2850f2ae681b9f86c
