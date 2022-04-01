@@ -1,4 +1,4 @@
-from view.game import Game
+from src.view.game import Game
 
 # import pygraphviz as pgv
 
