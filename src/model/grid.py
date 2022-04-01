@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 import numpy as np
 
 HUMAN = 1
@@ -7,7 +8,7 @@ class Grid():
     def __init__(self, no_rows=6, no_columns=7, grid_arr=None):
         self.__rows = no_rows
         self.__columns = no_columns
-        if grid_arr == None:
+        if grid_arr is None:
             self.__grid = np.zeros((no_rows, no_columns), np.int8)
         else:
             self.__grid = grid_arr
@@ -36,7 +37,7 @@ class Grid():
     def make_a_move(self, column, player= HUMAN):
         try:
             r = self.get_next_row(column)
-            if r!= None and r < self.__rows:
+            if r is not None and r < self.__rows:
                 self.__grid[r][column] = player
         except(IndexError):
             # do not stop the game just ignore this request to make a move
@@ -52,12 +53,12 @@ class Grid():
     def get_legal_moves(self):
         columns = np.array([])
         for i in range(self.__columns):
-            if self.get_next_row(i) != None:
+            if self.get_next_row(i) is not None:
                 columns = np.append(columns,i)
         return columns
 
     def is_terminal(self, grid_int=None, grid_string=None):
-        if grid_int != None:
+        if grid_int is not None:
             return grid_int >= 1.1111111111111111e+41
         
         return self.get_legal_moves().shape[0] == 0
