@@ -15,7 +15,7 @@ class TestIntegerState(unittest.TestCase):
                 [0,2,0,0,1,1,2],
                 [0,1,1,0,2,1,2]
             ])
-        testing.assert_array_equal(s.get_grid_arr().all(),arr.all())
+        testing.assert_array_equal(s.get_grid_arr(),arr)
 
 if __name__=='__main__':
     unittest.main()

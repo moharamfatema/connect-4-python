@@ -29,7 +29,9 @@ class Grid():
         return integer
 
     def __get_grid_str(self):
-        pass
+        arr = self.__grid.flatten()
+        s = "".join(str(i) for i in arr)
+        return s
 
     def get_grid_array(self):
         return self.__grid

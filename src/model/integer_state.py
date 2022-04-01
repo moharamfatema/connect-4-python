@@ -17,5 +17,5 @@ class IntegerState(State):
         arr = np.array([int(i) for i in str(self._representation)])
         rest = np.zeros((self._no_rows * self._no_columns - arr.shape[0]))
         arr = np.append(rest, arr)
-        arr.reshape((self._no_rows,self._no_columns))
+        arr = np.reshape(arr,(self._no_rows,self._no_columns))
         return arr

@@ -43,3 +43,6 @@ class State(ABC):
     def get_grid_arr(self):
         pass
 
+    def get_representation(self):
+        return self._representation
+
