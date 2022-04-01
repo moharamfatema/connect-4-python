@@ -4,10 +4,13 @@ HUMAN = 1
 AGENT = 2
 
 class Grid():
-    def __init__(self, no_rows=6, no_columns=7):
+    def __init__(self, no_rows=6, no_columns=7, grid_arr=None):
         self.__rows = no_rows
         self.__columns = no_columns
-        self.__grid = np.zeros((no_rows, no_columns), np.int8)
+        if grid_arr == None:
+            self.__grid = np.zeros((no_rows, no_columns), np.int8)
+        else:
+            self.__grid = grid_arr
         
     def get_next_row(self, column):
         if column >= self.__columns:
@@ -15,7 +18,7 @@ class Grid():
         for i in range(self.__rows - 1, -1, -1):
             if self.__grid[i][column] == 0:
                 return i
-        return -1
+        return None
 
     def get_grid_int(self):
         arr = self.__grid.flatten()
@@ -28,4 +31,36 @@ class Grid():
         return self.__grid
 
     def make_a_move(self, column, player= HUMAN):
-        self.__grid[self.get_next_row(column)][column] = player
+        try:
+            r = self.get_next_row(column)
+            if r!= None and r < self.__rows:
+                self.__grid[r][column] = player
+        except(IndexError):
+            # do not stop the game just ignore this request to make a move
+            # if the agent needs to know whether a move is legal, it should use get_next_row()
+            pass
+
+    # make a move but apply the changes to a new grid instance
+    def make_a_move_next_grid(self, column, player= HUMAN):
+        next_grid = Grid(self.__rows,self.__columns,self.__grid)
+        next_grid.make_a_move(column, player)
+        return next_grid
+
+    def get_legal_moves(self):
+        columns = np.array([])
+        for i in range(self.__columns):
+            if self.get_next_row(i) != None:
+                columns = np.append(columns,i)
+        return columns
+
+    def is_terminal(self, grid_int=None, grid_string=None):
+        if grid_int != None:
+            return grid_int >= 1.1111111111111111e+41
+        
+        return self.get_legal_moves().shape[0] == 0
+
+    def get_score(self):
+        pass
+
+    def get_heuristic_value(self):
+        pass

@@ -43,3 +43,7 @@ if current_tick > next_tick:
     > this heuristic is admissible for a Max node. May a Min node use it ?
     >
     > this works for fours in a row, does it work for columns and diagonals?
+
+## regex for string representation checks:
+
+    

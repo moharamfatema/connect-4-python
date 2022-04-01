@@ -13,10 +13,10 @@ TITLE = 'Connect 4'
 BACKGROUND_COLOUR = (200,200,200)
 
 # images paths
-ICON = 'img\\favicon.png'
-RED_PLAYER = 'img\\red_70x70.png'
-YELLOW_PLAYER = 'img\\yellow_70x70.png'
-BOARD = 'img\\Board_640x480.png'
+ICON = 'img/favicon.png'
+RED_PLAYER = 'img/red_70x70.png'
+YELLOW_PLAYER = 'img/yellow_70x70.png'
+BOARD = 'img/Board_640x480.png'
 
 # Cooridinates of the screen
 HEIGHT = 600

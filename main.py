@@ -1,7 +1,7 @@
-#from view.game import Game
+from view.game import Game
+
+# import pygraphviz as pgv
 
 # main function
-#game_class = Game(lambda x : x)
-#game_class.go()
-
-import pygraphviz
+game_class = Game(lambda x : x)
+game_class.go()
