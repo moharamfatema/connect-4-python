@@ -1,6 +1,6 @@
 import numpy as np
 from model.state.state import State
-from model.grid import ROWS, COLUMNS, HUMAN, AGENT
+from model.grid import ROWS, COLUMNS
 
 
 class IntegerState(State):

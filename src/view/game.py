@@ -1,12 +1,10 @@
 # import necessary libs
-import os
-import sys
-import pygame as pg
-import numpy as np
-from model.errors import IllegalMove
 
+import pygame as pg
+from model.errors import IllegalMove
 from model.grid import AGENT, HUMAN, Grid
 from model.agent import Agent
+from random import randint
 
 # define constants 
 TITLE = 'Connect 4'
@@ -50,7 +48,7 @@ FLOATING_Y = VERTICAL_BOUND - VERTICAL_MOVE / 2
 class Game:
 
     # Initialize pygame and load images
-    def __init__(self, ai_agent):
+    def __init__(self, ai_agent: Agent):
         
         pg.init()
         self.__icon = pg.image.load(ICON)
@@ -60,6 +58,16 @@ class Game:
         self.__state_grid = Grid()
         self.__agent = ai_agent
         self.__turn = HUMAN
+        
+        # game loop variables
+        self.__running = True
+        
+        # player column prior to pressing enter
+        self.__col = 0
+
+        # real time player coordinated
+        self.__player_x = PLAYER_X_INIT
+        self.__player_y = FLOATING_Y
 
         #  set scene attributes
         self.__screen = pg.display.set_mode((WIDTH,HEIGHT))
@@ -96,47 +104,41 @@ class Game:
     def set_state_grid(self,grid):
         self.__state_grid = grid
 
+    def __handle_events(self):
+        for event in pg.event.get():
+            # Quit on exit button click
+            if event.type == pg.QUIT:
+                self.__running = False
+            # if it's human's turn take thier move
+            elif self.__turn == HUMAN and event.type == pg.KEYDOWN:
+                if event.key == pg.K_LEFT:
+                    self.__player_x = self.__move_left(self.__player_x)
+                    self.__col = (self.__col - 1) % NO_COLUMNS
+                elif event.key == pg.K_RIGHT:
+                    self.__player_x = self.__move_right(self.__player_x)
+                    self.__col = (self.__col + 1) % NO_COLUMNS
+                elif event.key == pg.K_RETURN:
+                    try:
+                        self.__state_grid.make_a_move(self.__col, HUMAN)
+                        self.__turn = AGENT
+                        print(self.__state_grid.get_grid_array())
+                    except(IllegalMove):
+                        pass
+
     # game loop
     def go(self):
-        # for clock
-        current_tick = 0
-        next_tick = 0
+        
+        # randomly pick a starter
+        if randint(0,1) == 0:
+            self.__state_grid = self.__agent.move(self.__state_grid)
+            print("agent's turn")
 
-        # real time player coordinates
-        player_x = PLAYER_X_INIT
-        player_y = FLOATING_Y
-
-        c = 0
-        running = True
-
-        # self.__state_grid.make_a_move(0,AGENT)
-
-        while running:
-            for event in pg.event.get():
-                # Quit on exit button click
-                if event.type == pg.QUIT:
-                    running = False
-                # if it's human's turn take thier move
-                elif self.__turn == HUMAN and event.type == pg.KEYDOWN:
-                    if event.key == pg.K_LEFT:
-                        player_x = self.__move_left(player_x)
-                        c = (c - 1) % NO_COLUMNS
-                    elif event.key == pg.K_RIGHT:
-                        player_x = self.__move_right(player_x)
-                        c = (c + 1) % NO_COLUMNS
-                    elif event.key == pg.K_RETURN:
-                        try:
-                            self.__state_grid.make_a_move(c, HUMAN)
-                            self.__turn = AGENT
-                            print(self.__state_grid.get_grid_array())
-                        except(IllegalMove):
-                            pass
+        while self.__running:
+            
+            self.__handle_events()                        
                         
-                        
-
             # set background colour
             self.__screen.fill(BACKGROUND_COLOUR)
-
 
             # place players on board
             for i in range(NO_ROWS):
@@ -149,23 +151,12 @@ class Game:
             if self.__state_grid.is_terminal():
                 print("score =",self.__state_grid.get_score())
                 # TODO: end the game properly
-                running = False
+                self.__running = False
             elif self.__turn == HUMAN:
-                self.__place_player(self.__turn,player_x,player_y)
+                self.__place_player(self.__turn,self.__player_x,self.__player_y)
             elif self.__turn == AGENT:
                 self.__state_grid = self.__agent.move(self.__state_grid)
                 self.__turn = HUMAN
-            
-
-
-            current_tick = pg.time.get_ticks()
-            if current_tick > next_tick:
-                next_tick += 500 # interval in ms
-                # do something
-                # i -= 1
-                # j -= 1
-                #player_y = self.move_up(player_y)
-                #player_x = self.move_right(player_x)
 
             # board
             self.__screen.blit(self.__board, (WIDTH / 2 - BOARD_WIDTH / 2 , HEIGHT / 2 - BOARD_HEIGHT / 2))

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List
-from model.grid import Grid, HUMAN, AGENT, ROWS, COLUMNS
+from model.grid import Grid
 
 class State(ABC):
     @abstractmethod
