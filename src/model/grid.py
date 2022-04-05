@@ -1,7 +1,7 @@
 import re
 import numpy as np
 
-from src.model.errors import IllegalMove
+from model.errors import IllegalMove
 
 HUMAN = 1
 AGENT = 2
@@ -65,6 +65,11 @@ class Grid():
     def is_terminal(self, grid_int=None, grid_string=None):
         if grid_int is not None:
             return grid_int >= 1.1111111111111111e+41
+        elif grid_string is not None:
+            # regex for either ones or twos 42 times
+            size = ROWS * COLUMNS
+            regex = re.compile('^[12]{'+str(size)+'}') 
+            return regex.match(self._representation) != None
         
         return self.get_legal_moves().shape[0] == 0
 

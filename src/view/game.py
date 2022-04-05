@@ -3,10 +3,10 @@ import os
 import sys
 import pygame as pg
 import numpy as np
-from src.model.errors import IllegalMove
+from model.errors import IllegalMove
 
-from src.model.grid import AGENT, HUMAN, Grid
-from src.model.agent import Agent
+from model.grid import AGENT, HUMAN, Grid
+from model.agent import Agent
 
 # define constants 
 TITLE = 'Connect 4'
@@ -87,13 +87,6 @@ class Game:
 
     def __move_right(self, player_x = PLAYER_X_INIT):
         return player_x + HORIZONTAL_MOVE  if player_x < HORIZONTAL_BOUND else PLAYER_X_INIT
-        
-
-    def __move_down(self, player_y = VERTICAL_BOUND):
-        return player_y + VERTICAL_MOVE  if player_y < PLAYER_Y_INIT else VERTICAL_BOUND
-
-    def __move_up(self, player_y = PLAYER_Y_INIT):
-        return player_y - VERTICAL_MOVE  if player_y > VERTICAL_BOUND else PLAYER_Y_INIT
 
     def __move_to_row_column(self,row,column):
         return PLAYER_X_INIT + HORIZONTAL_MOVE * ( column % NO_COLUMNS), VERTICAL_BOUND + VERTICAL_MOVE * (row % NO_ROWS)
@@ -136,7 +129,6 @@ class Game:
                             self.__state_grid.make_a_move(c, HUMAN)
                             self.__turn = AGENT
                             print(self.__state_grid.get_grid_array())
-                            print(self.__state_grid.get_state_representation('integer'))
                         except(IllegalMove):
                             pass
                         
@@ -155,8 +147,9 @@ class Game:
                         self.__place_player(p, p_x, p_y)
 
             if self.__state_grid.is_terminal():
+                print("score =",self.__state_grid.get_score())
                 # TODO: end the game properly
-                break
+                running = False
             elif self.__turn == HUMAN:
                 self.__place_player(self.__turn,player_x,player_y)
             elif self.__turn == AGENT:

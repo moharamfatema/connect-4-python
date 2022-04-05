@@ -1,34 +1,57 @@
 from math import inf
-from src.model.grid import AGENT, COLUMNS, HUMAN, ROWS, Grid
-from src.model.state.integer_state import IntegerState
-from src.model.state.string_state import StringState
+from os import stat
+import numpy as np
+from model.grid import AGENT, COLUMNS, HUMAN, ROWS, Grid
+from model.state.integer_state import IntegerState
+from model.state.string_state import StringState
+from model.state.state import State
+from treelib import Node, Tree
+from treelib.exceptions import NodeIDAbsentError, DuplicatedNodeIdError
 
-
+DUPLICATE = ',duplicate'
 
 class Agent():
-    def __init__(self, max_depth = 7):
+    def __init__(self, max_depth = 5):
         self.__explored = {}
         self.__max_depth = max_depth
-        self.__tree = {}
+        self.__tree = Tree()
         
-
-    def __min(self, state,depth, alpha=None, beta=None):
+    def __min(self, state: State,depth: int, alpha=None, beta=None) -> tuple [int, State]:
         
-        if self.__explored.get((state.get_representation(),state.get_turn())) is not None:
-            return self.__explored.get((state.get_representation(),state.get_turn()))
+        #create new node for self 
+        node = Node(state.eval(),state.get_key())
 
+        # if we came across the same state return it and add to tree again
+        if self.__explored.get(state.get_key()) is not None:
+            # add self under root with new unique tag
+            node.identifier += DUPLICATE
+            done = False
+            while (not done):
+                try:
+                    self.__tree.add_node(node,parent='root')
+                    done = True
+                except DuplicatedNodeIdError:
+                    node.identifier += DUPLICATE
+            return self.__explored.get(state.get_key())
+
+
+        # leaf node
         if state.is_terminal() or depth >= self.__max_depth:
             val = state.eval()
-            self.__explored[(state.get_representation(),state.get_turn())] = (None,val)
+            self.__explored[state.get_key()] = (None,val)
+            # add self under root
+            self.__tree.add_node(node,parent='root')
             return (None, val)
+
         min_child = None
         min_util = inf
         children = state.get_children()
-        # self.__tree[state.get_representation()] = {c.get_representation()}
+
         for child in children:
 
-            self.__tree[(child.get_representation(),child.get_turn())] = (state.get_representation(),state.get_turn())
-            utility = self.__max(child,depth + 1,alpha,beta)[1]
+            nxt = self.__max(child,depth + 1,alpha,beta)
+
+            utility = nxt[1]
 
             if utility < min_util:
                 min_child = child
@@ -41,21 +64,60 @@ class Agent():
                 if min_util < beta:
                     beta = min_util
 
-        self.__explored[(state.get_representation(),state.get_turn())] = (min_child, min_util)
+        self.__explored[state.get_key()] = (min_child, min_util)
+        
+        # update self value
+        node.tag = min_util
+        # add self under root
+        self.__tree.add_node(node,parent='root')
+        # move children under self
+        for c in children: 
+            key = c.get_key()
+            found = False
+            
+            while (self.__explored.get(c.get_key()) and not found):
+                try:
+                    self.__tree.move_node(key,node.identifier) 
+                    found = True
+                except NodeIDAbsentError:
+                    key += DUPLICATE
         return (min_child, min_util)
 
-    def __max(self, state, depth,alpha=None, beta=None):
-        if self.__explored.get((state.get_representation(),state.get_turn())) is not None:
-            return self.__explored.get((state.get_representation(),state.get_turn()))
-        if state.is_terminal() or depth == self.__max_depth:
+    def __max(self, state : State, depth : int,alpha=None, beta=None) -> tuple [int, State]:
+        
+        #create new node for self 
+        node = Node(state.eval(),state.get_key())
+
+        # if we came across the same state return it and add to tree again
+        if self.__explored.get(state.get_key()) is not None:
+            # add self under root with new unique tag
+            node.identifier += DUPLICATE
+            done = False
+            while (not done):
+                try:
+                    self.__tree.add_node(node,parent='root')
+                    done = True
+                except DuplicatedNodeIdError:
+                    node.identifier += DUPLICATE
+            return self.__explored.get(state.get_key())
+
+        # leaf node
+        if state.is_terminal() or depth >= self.__max_depth:
             val = state.eval()
-            self.__explored[(state.get_representation(),state.get_turn())] = (None,val)
-            return (None, state.eval())
+            self.__explored[state.get_key()] = (None,val)
+            # add self under root
+            self.__tree.add_node(node,parent='root')
+            return (None, val)
+        
         max_child = None
         max_util = -inf
-        for child in state.get_children():
-            self.__tree[(child.get_representation(),child.get_turn())] = (state.get_representation(),state.get_turn())
-            utility = self.__min(child, depth + 1,alpha,beta)[1]
+        children = state.get_children()
+
+        for child in children:
+
+            nxt = self.__min(child,depth + 1,alpha,beta)
+
+            utility = nxt[1]
 
             if utility > max_util:
                 max_child = child
@@ -68,20 +130,51 @@ class Agent():
                 if max_util > alpha:
                     alpha = max_util
 
-        self.__explored[(state.get_representation(),state.get_turn())] = (max_child, max_util)
+        self.__explored[state.get_key()] = (max_child, max_util)
+        # update self value
+        node.tag = max_util
+        # add self under root
+        self.__tree.add_node(node,parent='root')
+        # move children under self
+        for c in children: 
+            key = c.get_key()
+            found = False
+            
+            while (self.__explored.get(c.get_key()) and not found):
+                try:
+                    self.__tree.move_node(key,node.identifier) 
+                    found = True
+                except NodeIDAbsentError:
+                    key += DUPLICATE
+
+                
+
+        
         return (max_child, max_util)
         
 
-    def solve(self, state, alpha_beta_pruning = True):
-        self.__tree = {}
+    def solve(self, state : State, alpha_beta_pruning = True):
+
         self.__explored = {}
+        self.__tree = Tree()
+        self.__tree.create_node('root','root')
         if alpha_beta_pruning:
             t = self.__max(state,0,-inf,inf)
         else:
             t = self.__max(state,0)
-        return (t[0],self.__tree.copy())
+        
+        self.__tree.show()
+        return (t[0],self.__tree)
 
-    def move(self, grid, alpha_beta_pruning = True):
+    def move(self, grid : Grid, alpha_beta_pruning = True):
         s = StringState(AGENT, grid.get_state_representation('string'))
         nxt = self.solve(s, alpha_beta_pruning)
         return nxt[0].get_grid()
+
+'''
+tree structure:
+(value, id, parent)
+value = return of minimax
+id = key
+key = tuple of (node val, turn)
+'''

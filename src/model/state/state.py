@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from src.model.grid import Grid, HUMAN, AGENT, ROWS, COLUMNS
+from typing import List
+from model.grid import Grid, HUMAN, AGENT, ROWS, COLUMNS
 
 class State(ABC):
     @abstractmethod
@@ -13,7 +14,7 @@ class State(ABC):
         return self._grid.is_terminal()
 
     def eval(self):
-        if self.is_terminal:
+        if self.is_terminal():
             # returns the actual score of the current state
             return self._grid.get_score()
             
@@ -22,7 +23,7 @@ class State(ABC):
             return self._grid.get_heuristic_value()
 
     @abstractmethod
-    def get_children(self,init):
+    def get_children(self,init) -> List:
         children = []
         for g in self._grid.get_children(self._turn):
             s = init(
@@ -45,3 +46,6 @@ class State(ABC):
 
     def get_turn(self):
         return self._turn
+
+    def get_key(self):
+        return str(self._representation)+", "+str(self._turn)

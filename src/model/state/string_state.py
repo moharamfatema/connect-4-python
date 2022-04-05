@@ -1,5 +1,5 @@
-from src.model.grid import COLUMNS, ROWS
-from src.model.state.state import State
+from model.grid import COLUMNS, ROWS
+from model.state.state import State
 import re 
 import numpy as np
 
@@ -12,8 +12,9 @@ class StringState(State):
         )
 
     def is_terminal(self):
-        # regex for either ones or twos 42 times
-        regex = re.compile('^[12]{42}') 
+         # regex for either ones or twos 42 times
+        size = ROWS * COLUMNS
+        regex = re.compile('^[12]{'+str(size)+'}') 
         return regex.match(self._representation) != None
 
     def get_grid_arr(self):
