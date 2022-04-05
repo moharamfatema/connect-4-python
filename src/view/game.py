@@ -3,8 +3,10 @@ import os
 import sys
 import pygame as pg
 import numpy as np
+from src.model.errors import IllegalMove
 
 from src.model.grid import AGENT, HUMAN, Grid
+from src.model.agent import Agent
 
 # define constants 
 TITLE = 'Connect 4'
@@ -114,7 +116,7 @@ class Game:
         c = 0
         running = True
 
-        self.__state_grid.make_a_move(0,AGENT)
+        # self.__state_grid.make_a_move(0,AGENT)
 
         while running:
             for event in pg.event.get():
@@ -130,10 +132,15 @@ class Game:
                         player_x = self.__move_right(player_x)
                         c = (c + 1) % NO_COLUMNS
                     elif event.key == pg.K_RETURN:
-                        # self.__turn = AGENT
-                        self.__state_grid.make_a_move(c, HUMAN)
-                        print(self.__state_grid.get_grid_array())
-                        print(self.__state_grid.get_state_representation('integer'))
+                        try:
+                            self.__state_grid.make_a_move(c, HUMAN)
+                            self.__turn = AGENT
+                            print(self.__state_grid.get_grid_array())
+                            print(self.__state_grid.get_state_representation('integer'))
+                        except(IllegalMove):
+                            pass
+                        
+                        
 
             # set background colour
             self.__screen.fill(BACKGROUND_COLOUR)
@@ -147,8 +154,15 @@ class Game:
                         p_x, p_y = self.__move_to_row_column(i, j)
                         self.__place_player(p, p_x, p_y)
 
-            if self.__turn == HUMAN:
+            if self.__state_grid.is_terminal():
+                # TODO: end the game properly
+                break
+            elif self.__turn == HUMAN:
                 self.__place_player(self.__turn,player_x,player_y)
+            elif self.__turn == AGENT:
+                self.__state_grid = self.__agent.move(self.__state_grid)
+                self.__turn = HUMAN
+            
 
 
             current_tick = pg.time.get_ticks()

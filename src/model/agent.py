@@ -1,11 +1,15 @@
 from math import inf
-from state import State
+from src.model.grid import AGENT, COLUMNS, HUMAN, ROWS, Grid
+from src.model.state.integer_state import IntegerState
+from src.model.state.string_state import StringState
+
+
 
 class Agent():
-    def __init__(self, max_depth = 7,no_rows=6, no_columns=7):
+    def __init__(self, max_depth = 7):
         self.__explored = {}
         self.__max_depth = max_depth
-        self.__parent_map = {}
+        self.__tree = {}
         
 
     def __min(self, state,depth, alpha=None, beta=None):
@@ -13,15 +17,17 @@ class Agent():
         if self.__explored.get((state.get_representation(),state.get_turn())) is not None:
             return self.__explored.get((state.get_representation(),state.get_turn()))
 
-        if state.is_terminal() or depth == self.__max_depth:
+        if state.is_terminal() or depth >= self.__max_depth:
             val = state.eval()
             self.__explored[(state.get_representation(),state.get_turn())] = (None,val)
             return (None, val)
         min_child = None
         min_util = inf
-        for child in state.get_children():
+        children = state.get_children()
+        # self.__tree[state.get_representation()] = {c.get_representation()}
+        for child in children:
 
-            self.__parent_map[(child.get_representation(),child.get_turn())] = (state.get_representation(),state.get_turn())
+            self.__tree[(child.get_representation(),child.get_turn())] = (state.get_representation(),state.get_turn())
             utility = self.__max(child,depth + 1,alpha,beta)[1]
 
             if utility < min_util:
@@ -48,7 +54,7 @@ class Agent():
         max_child = None
         max_util = -inf
         for child in state.get_children():
-            self.__parent_map[(child.get_representation(),child.get_turn())] = (state.get_representation(),state.get_turn())
+            self.__tree[(child.get_representation(),child.get_turn())] = (state.get_representation(),state.get_turn())
             utility = self.__min(child, depth + 1,alpha,beta)[1]
 
             if utility > max_util:
@@ -67,11 +73,15 @@ class Agent():
         
 
     def solve(self, state, alpha_beta_pruning = True):
-        self.__parent_map = {}
-        # self.__explored = {} # still debating on this
-        self.__parent_map[(state.get_representation(),state.get_turn())] = (state.get_representation(),state.get_turn())
+        self.__tree = {}
+        self.__explored = {}
         if alpha_beta_pruning:
-            t = self.__max(state,self.__max_depth,-inf,inf)
+            t = self.__max(state,0,-inf,inf)
         else:
-            t = self.__max(state,self.__max_depth)
-        return (t[0],self.__parent_map.copy())
+            t = self.__max(state,0)
+        return (t[0],self.__tree.copy())
+
+    def move(self, grid, alpha_beta_pruning = True):
+        s = StringState(AGENT, grid.get_state_representation('string'))
+        nxt = self.solve(s, alpha_beta_pruning)
+        return nxt[0].get_grid()

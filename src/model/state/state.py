@@ -1,19 +1,16 @@
 from abc import ABC, abstractmethod
-from grid import Grid, HUMAN, AGENT
+from src.model.grid import Grid, HUMAN, AGENT, ROWS, COLUMNS
 
 class State(ABC):
     @abstractmethod
-    def __init__(self,turn, representation_type, representation, no_rows, no_columns):
+    def __init__(self,turn, representation_type, representation):
         self._turn = turn
         self._representation = representation
         self._representation_type = representation_type
-        self._no_rows = no_rows
-        self._no_columns = no_columns
-        self._grid = Grid(no_rows, no_columns, self.get_grid_arr())
+        self._grid = Grid(self.get_grid_arr())
 
-    @abstractmethod
     def is_terminal(self):
-        pass
+        return self._grid.is_terminal()
 
     def eval(self):
         if self.is_terminal:
@@ -24,19 +21,16 @@ class State(ABC):
             # returns the heuristic evaluation of this state
             return self._grid.get_heuristic_value()
 
-    def get_children(self):
-        next_turn = HUMAN if self.__turn == AGENT else AGENT
+    @abstractmethod
+    def get_children(self,init):
         children = []
-        for g in self._grid.get_children():
-            children.append(
-                State(
-                    next_turn,
-                    self._representation_type,
-                    g.get_state_representation(self._representation_type),
-                    self._no_rows,
-                    self._no_columns
+        for g in self._grid.get_children(self._turn):
+            s = init(
+                    self._turn,
+                    g.get_state_representation(self._representation_type)
+                
                 )
-            )
+            children.append(s)
         return children
         
     @abstractmethod
@@ -46,3 +40,8 @@ class State(ABC):
     def get_representation(self):
         return self._representation
 
+    def get_grid(self):
+        return self._grid
+
+    def get_turn(self):
+        return self._turn
