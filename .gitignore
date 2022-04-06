@@ -4,3 +4,4 @@ env
 .vscode
 test_*.py
 test
+out
