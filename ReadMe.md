@@ -6,14 +6,14 @@
 |_ src
     |_main.py
     |_model
-        |_agent.py
-        |_grid.py
-        |_state
-            |_state.py
-            |_integer_state.py
-            |_string_state.py
+    |   |_agent.py
+    |   |_grid.py
+    |   |_state
+    |       |_state.py
+    |       |_integer_state.py
+    |       |_string_state.py
     |_view
-        |_game.py
+    |   |_game.py
     |_img
 ```
 

@@ -2,7 +2,6 @@ import numpy as np
 from model.state.state import State
 from model.grid import ROWS, COLUMNS
 
-
 class IntegerState(State):
     def __init__(self,turn, state_integer):
         super().__init__(

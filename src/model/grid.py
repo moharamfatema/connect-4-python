@@ -1,4 +1,5 @@
 import re
+from time import perf_counter_ns
 import numpy as np
 
 from model.errors import IllegalMove
@@ -7,6 +8,15 @@ HUMAN = 1
 AGENT = 2
 ROWS = 6
 COLUMNS = 7
+
+REG_HUMAN_H = re.compile("(1(?!1{3,})|0(?!0{3,})){4,}")
+REG_AGENT_H = re.compile("(2(?!2{3,})|0(?!0{3,})){4,}")
+
+REG_HUMAN_s = re.compile("1{4,}")
+REG_AGENT_S = re.compile("2{4,}")
+
+TERMINAL_REG = re.compile('^[12]{'+str(ROWS * COLUMNS)+'}') 
+REG_ZERO = re.compile("0")
 
 class Grid():
     def __init__(self, grid_arr=None):
@@ -67,24 +77,21 @@ class Grid():
             return grid_int >= 1.1111111111111111e+41
         elif grid_string is not None:
             # regex for either ones or twos 42 times
-            size = ROWS * COLUMNS
-            regex = re.compile('^[12]{'+str(size)+'}') 
-            return regex.match(self._representation) != None
+            return TERMINAL_REG.match(self._representation) != None
         
         return self.get_legal_moves().shape[0] == 0
 
     def __get_score_from_rows(self, rows):
         total = 0
-        reg_human = re.compile("1{4,}")
-        reg_agent = re.compile("2{4,}")
+        
 
         for row in rows:
             row_str = "".join(str(i) for i in row)
             score = 0
 
-            for s in reg_agent.findall(row_str):
+            for s in REG_AGENT_S.findall(row_str):
                 score += (len(s) - 3)
-            for s in reg_human.findall(row_str):
+            for s in REG_HUMAN_s.findall(row_str):
                 score -= (len(s) - 3)
 
             total += score
@@ -92,6 +99,7 @@ class Grid():
         return total
 
     def get_score(self):
+        start = perf_counter_ns()
         agent_score = 0
 
         # iterating through rows
@@ -112,7 +120,8 @@ class Grid():
         diag_arr = np.fliplr(self.__grid)
         diag_arr = [np.diag(diag_arr, k) for k in range(-1*ROWS + 1,COLUMNS)]
         agent_score += self.__get_score_from_rows(diag_arr)
-         
+        duration = ( perf_counter_ns() - start) / 1e6
+        print("score took :",duration,"ms.")
         return agent_score
     
     def __p_fail(self, n): # n = number of empty spaces
@@ -120,51 +129,45 @@ class Grid():
 
     
     def __get_heuristic_from_rows(self, rows):
+
         total = 0
-        reg_human = re.compile("[^2]{4,}")
-        reg_agent = re.compile("[^1]{4,}")
-
-        reg_all_ones = re.compile("^1+$")
-        reg_all_twos = re.compile("^2+$")
-        reg_all_zeros = re.compile("^0+$")
-
-        reg_zero = re.compile("0")
-
+        
         for row in rows:
             row_str = "".join(str(i) for i in row)
             score = 0
-
-            for s in reg_agent.findall(row_str):
-                # ignore the redundant and the actual score
-                if reg_all_twos.match(s) is not None or reg_all_zeros.match(s) is not None:
-                    continue
+            # offense mode
+            for s in REG_AGENT_H.finditer(row_str):
+                s = s.group()
                 # number of empty spaces
-                n = len(reg_zero.findall(s))
+                n = len(REG_ZERO.findall(s))
                 # probability of failure
                 p = self.__p_fail(n)
                 # expected score if no failure happened
                 x = len(s) - 3
                 # expected variable of score
                 score += (1 - n * p) * x + n * p * (x - 1)
-            for s in reg_human.findall(row_str):
-                if reg_all_ones.match(s) is not None or reg_all_zeros.match(s) is not None:
-                    continue
+            
+            # defense mode
+            for s in REG_HUMAN_H.finditer(row_str):
+                s = s.group()
                 # number of empty spaces
-                n = len(reg_zero.findall(s))
+                n = len(REG_ZERO.findall(s))
                 # probability of failure
-                p = self.__p_fail(n)
+                # TODO: give 50% more weight to defense mode
+                p = 1.5 * self.__p_fail(n)
                 # expected score if no failure happened
                 x = len(s) - 3
                 # expected variable of score
                 score -= (1 - n * p) * x + n * p * (x - 1)
 
             total += score
-
-        return total - self.__get_score_from_rows(rows)
+        # this and then the actual score
+        total += self.__get_score_from_rows(rows)
+        return total
     
     def get_heuristic_value(self):
-        # TODO
-        
+        # TODO: optimize (takes too long)
+        start = perf_counter_ns()
         agent_score = 0
 
         # iterating through rows
@@ -185,7 +188,8 @@ class Grid():
         diag_arr = np.fliplr(self.__grid)
         diag_arr = [np.diag(diag_arr, k) for k in range(-1*ROWS + 1,COLUMNS)]
         agent_score += self.__get_heuristic_from_rows(diag_arr)
-         
+        duration = (perf_counter_ns() - start) / 1e6
+        # TODO: cleanup print("Heuristic function took",duration,"ms.")
         return agent_score
         
     def get_children(self, turn):

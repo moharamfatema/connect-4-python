@@ -5,12 +5,14 @@ from model.state.string_state import StringState
 from model.state.state import State
 from treelib import Node, Tree
 from time import perf_counter
+import pydot as pd
 
 class Agent():
     def __init__(self, max_depth = 3):
         self.__explored = {}
         self.__max_depth = max_depth
         self.__tree = Tree()
+        self.__time = 0
 
     # repeated stuff for each state
     def __state_initial_check(self, state: State, depth):
@@ -38,15 +40,16 @@ class Agent():
             self.__tree.add_node(node,parent='root')
             return (will_return, explored) # previously recorded return
 
-        # leaf node
-        if state.is_terminal() or depth >= self.__max_depth:
+        # leaf node (or time limit exceeded)
+        duration = perf_counter() - self.__start
+        if state.is_terminal() or depth >= self.__max_depth or duration > 50:
             will_return = True
             val = state.eval()
             self.__explored[state.get_key()] = (None,val) # record value
             # add self under root
             node.identifier = state.get_tree_id()
             self.__tree.add_node(node,parent='root')
-
+            if duration > 50: print("timeout.")
             return (will_return,(None, val))
 
         return (will_return, node)
@@ -101,7 +104,7 @@ class Agent():
         return (min_child, min_util)
 
     def __max(self, state : State, depth : int,alpha=None, beta=None) -> tuple [State, int]:
-        
+                
         (check, ret) = self.__state_initial_check(state, depth)
 
         if check : return ret
@@ -147,30 +150,43 @@ class Agent():
 
         if alpha_beta_pruning:
             self.__max_depth += 1
-            t = self.__max(state,0,-inf,inf)
+            (t, val) = self.__max(state,0,-inf,inf)
         else:
-            t = self.__max(state,0)
+            (t, val) = self.__max(state,0)
         
-        return (t[0],self.__tree)
+        # remove temp root
+        # self.__tree.root = t.get_tree_id()
+        # self.__tree.remove_node('root')
+        return t
 
-    # view interface
+    # interface to the agent
     def move(self, grid : Grid, alpha_beta_pruning = True) -> Grid:
-        start = perf_counter()
+        self.__start = perf_counter()
         s = StringState(AGENT, grid.get_state_representation('string'))
         nxt = self.solve(s, alpha_beta_pruning)
-        end = perf_counter()
-        print("Time = ", end - start)
-        return nxt[0].get_grid()
+        self.__time = perf_counter() - self.__start
+        print("Time = ", self.__time,"seconds.")
+        return nxt.get_grid()
 
     def print_tree(self, show_state = False):
         self.__tree.show(idhidden=not show_state)
 
     def dump_tree(self, file_name = 'tree.json'):
         file = open(file_name,'w')
-        # TODO:
-        json.dump(self.__tree.to_json(sort= False), file)
+        # TODO: json format is not right
+        json.dump(self.__tree.to_dict(sort= False), file)
         file.close()
 
+    def tree_to_svg(self,filename_no_extension='out/tree'):
+        # TODO:
+        filename = filename_no_extension+".dot"
+        self.__tree.to_graphviz(filename)
+        dot = pd.graph_from_dot_file(filename)[0]
+        filename = filename_no_extension+".svg"
+        dot.write_svg(filename)
+
+    def get_time(self):
+        return self.__time
 '''
 tree structure:
 (value, id, parent)

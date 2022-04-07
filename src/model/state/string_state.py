@@ -12,7 +12,7 @@ class StringState(State):
         )
 
     def is_terminal(self):
-         # regex for either ones or twos 42 times
+        # regex for either ones or twos 42 times
         size = ROWS * COLUMNS
         regex = re.compile('^[12]{'+str(size)+'}') 
         return regex.match(self._representation) != None

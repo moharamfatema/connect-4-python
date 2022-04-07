@@ -2,3 +2,6 @@ pygame
 numpy
 abc
 treelib
+tkinter
+pillow
+ttkthemes

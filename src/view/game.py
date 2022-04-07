@@ -1,10 +1,11 @@
 # import necessary libs
-
 import pygame as pg
+from random import randint
+# import other modules
 from model.errors import IllegalMove
 from model.grid import AGENT, HUMAN, Grid
 from model.agent import Agent
-from random import randint
+from view.main_frame import MainFrame
 
 # define constants 
 TITLE = 'Connect 4'
@@ -48,8 +49,9 @@ FLOATING_Y = VERTICAL_BOUND - VERTICAL_MOVE / 2
 class Game:
 
     # Initialize pygame and load images
-    def __init__(self, ai_agent: Agent):
+    def __init__(self, ai_agent: Agent, frame: MainFrame):
         
+        self.__frame = frame
         pg.init()
         self.__icon = pg.image.load(ICON)
         self.__human_player = pg.image.load(RED_PLAYER)
@@ -120,6 +122,7 @@ class Game:
                 elif event.key == pg.K_RETURN:
                     try:
                         self.__state_grid.make_a_move(self.__col, HUMAN)
+                        self.__frame.show_score(self.__state_grid.get_score())
                         self.__turn = AGENT
                         print(self.__state_grid.get_grid_array())
                     except(IllegalMove):
@@ -159,10 +162,15 @@ class Game:
                 self.__place_player(self.__turn,self.__player_x,self.__player_y)
             elif self.__turn == AGENT:
                 pg.display.update() 
-                self.__state_grid = self.__agent.move(self.__state_grid, True)
-                self.__agent.dump_tree("out\\tree.json")
+                self.__state_grid = self.__agent.move(self.__state_grid, self.__frame.alpha_beta_pruning())
+                self.__frame.show_score(self.__state_grid.get_score())
+
+                # output the tree
+                self.__agent.tree_to_svg("out\\tree")
+                self.__frame.show_time()
                 self.__turn = HUMAN
 
 
             # update scene
             pg.display.update() 
+            self.__frame.update()

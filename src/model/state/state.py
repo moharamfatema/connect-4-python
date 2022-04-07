@@ -12,7 +12,7 @@ class State(ABC):
         self._turn = turn
         self._representation = representation
         self._representation_type = representation_type
-        self._tree_id = str(self._representation)+", "+str(self._turn)
+        self._tree_id = str(self._representation)+","+str(self._turn)
         self._grid = Grid(self.get_grid_arr())
         self._heuristic = None
 
