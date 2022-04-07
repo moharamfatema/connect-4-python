@@ -114,11 +114,80 @@ class Grid():
         agent_score += self.__get_score_from_rows(diag_arr)
          
         return agent_score
+    
+    def __p_fail(self, n): # n = number of empty spaces
+        return (1 / n) * ((n - 1) / n) ** (n - 1)
 
+    
+    def __get_heuristic_from_rows(self, rows):
+        total = 0
+        reg_human = re.compile("[^2]{4,}")
+        reg_agent = re.compile("[^1]{4,}")
+
+        reg_all_ones = re.compile("^1+$")
+        reg_all_twos = re.compile("^2+$")
+        reg_all_zeros = re.compile("^0+$")
+
+        reg_zero = re.compile("0")
+
+        for row in rows:
+            row_str = "".join(str(i) for i in row)
+            score = 0
+
+            for s in reg_agent.findall(row_str):
+                # ignore the redundant and the actual score
+                if reg_all_twos.match(s) is not None or reg_all_zeros.match(s) is not None:
+                    continue
+                # number of empty spaces
+                n = len(reg_zero.findall(s))
+                # probability of failure
+                p = self.__p_fail(n)
+                # expected score if no failure happened
+                x = len(s) - 3
+                # expected variable of score
+                score += (1 - n * p) * x + n * p * (x - 1)
+            for s in reg_human.findall(row_str):
+                if reg_all_ones.match(s) is not None or reg_all_zeros.match(s) is not None:
+                    continue
+                # number of empty spaces
+                n = len(reg_zero.findall(s))
+                # probability of failure
+                p = self.__p_fail(n)
+                # expected score if no failure happened
+                x = len(s) - 3
+                # expected variable of score
+                score -= (1 - n * p) * x + n * p * (x - 1)
+
+            total += score
+
+        return total - self.__get_score_from_rows(rows)
+    
     def get_heuristic_value(self):
         # TODO
-        return self.get_score()
+        
+        agent_score = 0
 
+        # iterating through rows
+        
+        agent_score += self.__get_heuristic_from_rows(self.__grid)
+
+        # iterating through columns
+        
+        agent_score += self.__get_heuristic_from_rows(np.transpose(self.__grid))
+
+        # through diagonals
+
+        diag_arr = [np.diag(self.__grid, k) for k in range(-1*ROWS + 1,COLUMNS)]
+        agent_score += self.__get_heuristic_from_rows(diag_arr)
+
+        #through diagonals 2
+
+        diag_arr = np.fliplr(self.__grid)
+        diag_arr = [np.diag(diag_arr, k) for k in range(-1*ROWS + 1,COLUMNS)]
+        agent_score += self.__get_heuristic_from_rows(diag_arr)
+         
+        return agent_score
+        
     def get_children(self, turn):
         moves = self.get_legal_moves()
         children = []

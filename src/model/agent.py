@@ -1,13 +1,13 @@
+import json
 from math import inf
 from model.grid import AGENT, Grid
-from model.state.integer_state import IntegerState
 from model.state.string_state import StringState
 from model.state.state import State
 from treelib import Node, Tree
-from treelib.exceptions import NodeIDAbsentError, DuplicatedNodeIdError
+from time import perf_counter
 
 class Agent():
-    def __init__(self, max_depth = 5):
+    def __init__(self, max_depth = 3):
         self.__explored = {}
         self.__max_depth = max_depth
         self.__tree = Tree()
@@ -146,18 +146,30 @@ class Agent():
         self.__tree.create_node('root','root')
 
         if alpha_beta_pruning:
+            self.__max_depth += 1
             t = self.__max(state,0,-inf,inf)
         else:
             t = self.__max(state,0)
         
-        self.__tree.show(idhidden=False)
         return (t[0],self.__tree)
 
     # view interface
     def move(self, grid : Grid, alpha_beta_pruning = True) -> Grid:
+        start = perf_counter()
         s = StringState(AGENT, grid.get_state_representation('string'))
         nxt = self.solve(s, alpha_beta_pruning)
+        end = perf_counter()
+        print("Time = ", end - start)
         return nxt[0].get_grid()
+
+    def print_tree(self, show_state = False):
+        self.__tree.show(idhidden=not show_state)
+
+    def dump_tree(self, file_name = 'tree.json'):
+        file = open(file_name,'w')
+        # TODO:
+        json.dump(self.__tree.to_json(sort= False), file)
+        file.close()
 
 '''
 tree structure:

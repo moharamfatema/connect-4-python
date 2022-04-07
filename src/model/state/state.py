@@ -14,6 +14,7 @@ class State(ABC):
         self._representation_type = representation_type
         self._tree_id = str(self._representation)+", "+str(self._turn)
         self._grid = Grid(self.get_grid_arr())
+        self._heuristic = None
 
     def is_terminal(self):
         return self._grid.is_terminal()
@@ -25,7 +26,9 @@ class State(ABC):
             
         else: 
             # returns the heuristic evaluation of this state
-            return self._grid.get_heuristic_value()
+            if self._heuristic is None:
+                self._heuristic = self._grid.get_heuristic_value()
+            return self._heuristic
 
     @abstractmethod
     def get_children(self,init) -> List:

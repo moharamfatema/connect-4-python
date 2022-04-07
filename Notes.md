@@ -32,13 +32,13 @@ if current_tick > next_tick:
     >
     > Since we want to stay optimistic (admissible) and since there is no way to simulate the opponent's optimal method of thinking without completing the search tree, we will assume a uniformly distributed probability function for the opponent's next move.
     >
-    > Assuming $p(fail) = (\frac{1}{C} * \frac{C - 1}{C} ^{C - 1}) $ chance of failure for each single empty space.$= around\ 0.057$ for $C = 7$ where $C$ is the number of non-full columns. 
+    > Assuming $p(fail) = (\frac{1}{C} * \frac{C - 1}{C} ^{C - 1}) $ chance of failure for each single empty space.$= around\ 0.148$ for $C = 3$ where $C$ is the number of empty spaces)
     >
-    > Knowing that the failure of any single empty space of the state will lead to its failure: $P_{state failure} = n p(fail)$ where $n$ is the number of empty spaces in a row.
+    > Knowing that the failure of any single empty space of the state will lead to its failure: $P_{state failure} = C p(fail)$ where $n$ is the number of empty spaces in a row.
     >
-    > $maximum\ p_{state failure}\ |_{n = 4} = 0.228$ for $C = 7$
+    > $maximum\ p_{state failure}\ |_{C = 4} = 0.593$ for $C = 4$
     >
-    > $h = (1 - np(fail)) * x + np(fail) * (x - 1)$
+    > $h = (1 - Cp(fail)) * x + Cp(fail) * (x - 1)$
     >
     > this heuristic is admissible for a Max node. May a Min node use it ?
     >
@@ -46,4 +46,13 @@ if current_tick > next_tick:
 
 ## regex for string representation checks:
 
-    
+    terminal state: ^[12]{42}
+    real score: 
+        human: 1{4,}
+        agent: 2{4,}
+    heuristic:
+        to get a non interrupted by opponent string:
+            [^2]{4,}
+            [^1]{4,}
+        all zeros 
+            0{4,}

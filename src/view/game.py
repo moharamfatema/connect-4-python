@@ -130,12 +130,11 @@ class Game:
         
         # randomly pick a starter
         if randint(0,1) == 0:
-            self.__state_grid = self.__agent.move(self.__state_grid)
-            print("agent's turn")
+            self.__state_grid.make_a_move(NO_COLUMNS / 2,AGENT)
 
         while self.__running:
             
-            self.__handle_events()                        
+            self.__handle_events()
                         
             # set background colour
             self.__screen.fill(BACKGROUND_COLOUR)
@@ -148,6 +147,10 @@ class Game:
                         p_x, p_y = self.__move_to_row_column(i, j)
                         self.__place_player(p, p_x, p_y)
 
+            # board
+            self.__screen.blit(self.__board, (WIDTH / 2 - BOARD_WIDTH / 2 , HEIGHT / 2 - BOARD_HEIGHT / 2))
+            
+
             if self.__state_grid.is_terminal():
                 print("score =",self.__state_grid.get_score())
                 # TODO: end the game properly
@@ -155,11 +158,11 @@ class Game:
             elif self.__turn == HUMAN:
                 self.__place_player(self.__turn,self.__player_x,self.__player_y)
             elif self.__turn == AGENT:
-                self.__state_grid = self.__agent.move(self.__state_grid)
+                pg.display.update() 
+                self.__state_grid = self.__agent.move(self.__state_grid, True)
+                self.__agent.dump_tree("out\\tree.json")
                 self.__turn = HUMAN
 
-            # board
-            self.__screen.blit(self.__board, (WIDTH / 2 - BOARD_WIDTH / 2 , HEIGHT / 2 - BOARD_HEIGHT / 2))
 
             # update scene
             pg.display.update() 
