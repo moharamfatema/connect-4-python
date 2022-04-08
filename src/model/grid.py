@@ -4,8 +4,8 @@ from time import perf_counter_ns
 import numpy as np
 from model.errors import IllegalMove
 
-HUMAN = 1
-AGENT = 2
+HUMAN = '1'
+AGENT = '2'
 ROWS = 6
 COLUMNS = 7
 
@@ -22,7 +22,7 @@ class Grid():
     def __init__(self, grid_arr=None):
 
         if grid_arr is None:
-            self.__grid = np.zeros((ROWS, COLUMNS), np.int8)
+            self.__grid = np.zeros((ROWS, COLUMNS), np.ubyte)
         else:
             self.__grid = grid_arr
         
@@ -38,12 +38,12 @@ class Grid():
         arr = self.__grid.flatten()
         integer = 0
         for i in range(arr.shape[0] - 1, -1, -1):
-            integer = integer + arr[arr.shape[0] - 1 -i] * 10 ** i
+            integer = integer + int(arr[arr.shape[0] - 1 -i]) * 10 ** i
         return integer
 
     def __get_grid_str(self):
         arr = self.__grid.flatten()
-        s = "".join(str(i) for i in arr)
+        s = np.join("",arr)
         return s
 
     def get_grid_array(self):
@@ -86,7 +86,7 @@ class Grid():
         
 
         for row in rows:
-            row_str = "".join(str(i) for i in row)
+            row_str = np.join("",row)
 
             score = 0
 
@@ -134,7 +134,7 @@ class Grid():
         total = 0
         
         for row in rows:
-            row_str = "".join(str(i) for i in row)
+            row_str = np.join("",row)
             score = 0
             # offense mode
             for s in REG_AGENT_H.finditer(row_str):
@@ -166,7 +166,6 @@ class Grid():
         total += self.__get_score_from_rows(rows)
         return total
     
-    @jit(nopython=True, parallel=True)
     def get_heuristic_value(self):
         # TODO: optimize (takes too long)
         start = perf_counter_ns()
