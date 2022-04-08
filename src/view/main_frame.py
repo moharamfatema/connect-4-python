@@ -55,7 +55,7 @@ class MainFrame():
 
     def change_depth(self):
         d = int(self.__depth_in.get())
-        if d > 0 and d < 7:self.__agent.set_max_depth(d)
+        if d > 0:self.__agent.set_max_depth(d)
         
 
     def setup(self):

@@ -40,9 +40,9 @@ if current_tick > next_tick:
     >
     > $h = (1 - Cp(fail)) * x + Cp(fail) * (x - 1)$
     >
-    > this heuristic is admissible for a Max node. May a Min node use it ?
-    >
-    > this works for fours in a row, does it work for columns and diagonals?
+    > For the sake of playing in defense mode:  
+    >  
+    > When calculating the expected score, the expected `HUMAN` score should be given a greater weight that the `AGENT` score, by multiplying the value by around 1.5 (50% more weight).
 
 ## regex for string representation checks:
 

@@ -5,5 +5,3 @@ treelib
 tkinter
 pillow
 ttkthemes
-llvmlite
-numba
