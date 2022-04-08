@@ -105,7 +105,8 @@ class Grid():
         
         return self.get_legal_moves().shape[0] == 0
 
-    def __get_score_from_rows_old(self, rows):
+    @staticmethod
+    def __get_score_from_rows_old(rows):
         total = 0
         
 
@@ -175,11 +176,12 @@ class Grid():
         # print("score took :",duration,"ms.")
         return agent_score
     
-    def __p_fail(self, n): # n = number of empty spaces
+    @staticmethod
+    def __p_fail( n): # n = number of empty spaces
         return (1 / n) * ((n - 1) / n) ** (n - 1)
 
-    
-    def __get_heuristic_from_rows(self, rows):
+    @staticmethod
+    def __get_heuristic_from_rows(rows):
 
         total = 0
         
@@ -192,7 +194,7 @@ class Grid():
                 # number of empty spaces
                 n = len(REG_ZERO.findall(s))
                 # probability of failure
-                p = self.__p_fail(n)
+                p = Grid.__p_fail(n)
                 # expected score if no failure happened
                 x = len(s) - 3
                 # expected variable of score
@@ -205,15 +207,66 @@ class Grid():
                 n = len(REG_ZERO.findall(s))
                 # probability of failure
                 # TODO: give 50% more weight to defense mode
-                p = 1.5 * self.__p_fail(n)
+                p =  Grid.__p_fail(n)
                 # expected score if no failure happened
                 x = len(s) - 3
                 # expected variable of score
-                score -= (1 - n * p) * x + n * p * (x - 1)
+                score -= 1.5 * ((1 - n * p) * x + n * p * (x - 1))
 
             total += score
         # this and then the actual score
         total += Grid.__get_score_from_rows(rows)
+        return total
+
+    @staticmethod
+    def __get_heuristic_from_rows_manual(rows): # unused
+
+        total = 0
+        
+        for row in rows:
+            row_str = [chr(i) for i in row]
+            row_str = "".join(row_str)
+            score = 0
+
+            # 3 empty spaces
+            n = 3
+            p = Grid.__p_fail(n)
+
+            count = 0
+            for sub in AGENT_3: count += Grid.occurences(row_str,sub)
+            score = score + count * ((1 - n * p)  )
+
+            count = 0
+            for sub in HUMAN_3: count += Grid.occurences(row_str,sub)
+            score = score + DEFENSE_WEIGHT * count * ((1 - n * p)  )
+
+            # 2 empty spaces
+            n = 2
+            p = Grid.__p_fail(n)
+
+            count = 0
+            for sub in AGENT_2: count += Grid.occurences(row_str,sub)
+            score = score + count * ((1 - n * p)  )
+
+            count = 0
+            for sub in HUMAN_2: count += Grid.occurences(row_str,sub)
+            score = score + DEFENSE_WEIGHT * count * ((1 - n * p)  )
+
+            # 1 empty spaces
+            n = 1
+            p = Grid.__p_fail(n)
+
+            count = 0
+            for sub in AGENT_1: count += Grid.occurences(row_str,sub)
+            score = score + count * ((1 - n * p)  )
+
+            count = 0
+            for sub in HUMAN_1: count += Grid.occurences(row_str,sub)
+            score = score + DEFENSE_WEIGHT * count * ((1 - n * p)  )
+
+            total = total + score
+        # this and then the actual score
+        total = total + Grid.__get_score_from_rows(rows)
         return total
     
     def get_heuristic_value(self):
@@ -223,22 +276,22 @@ class Grid():
 
         # iterating through rows
         
-        agent_score += self.__get_heuristic_from_rows(self.__grid)
+        agent_score += Grid.__get_heuristic_from_rows(self.__grid)
 
         # iterating through columns
         
-        agent_score += self.__get_heuristic_from_rows(np.transpose(self.__grid))
+        agent_score += Grid.__get_heuristic_from_rows(np.transpose(self.__grid))
 
         # through diagonals
 
         diag_arr = [np.diag(self.__grid, k) for k in range(-1*ROWS + 1,COLUMNS)]
-        agent_score += self.__get_heuristic_from_rows(diag_arr)
+        agent_score += Grid.__get_heuristic_from_rows(diag_arr)
 
         #through diagonals 2
 
         diag_arr = np.fliplr(self.__grid)
         diag_arr = [np.diag(diag_arr, k) for k in range(-1*ROWS + 1,COLUMNS)]
-        agent_score += self.__get_heuristic_from_rows(diag_arr)
+        agent_score += Grid.__get_heuristic_from_rows(diag_arr)
         duration = (perf_counter_ns() - start) / 1e6
         # TODO: cleanup print("Heuristic function took",duration,"ms.")
         return agent_score
