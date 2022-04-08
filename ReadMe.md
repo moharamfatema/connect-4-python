@@ -61,7 +61,7 @@ The app randomly picks a starter. If the agent is the starter, a coin is placed 
 
 ## Performance
 
-Below are the time intervals the minimax algorithm is expected  to take (roughly, usually takes a couple seconds less) for depths from 1 through 13:
+Below are the time intervals the minimax algorithm is expected  to take (roughly, usually takes a couple seconds more or less) for depths from 1 through 13:
 > 0.002 seconds.  
 > 0.012 seconds.  
 > 0.081 seconds.  
