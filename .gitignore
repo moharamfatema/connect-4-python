@@ -5,5 +5,4 @@ env
 test_*.py
 test
 out
-*.ipynb
 test*
