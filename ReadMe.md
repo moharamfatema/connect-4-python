@@ -30,7 +30,7 @@ AI agent plays against the player until the board is full. The score of each pla
 
 ## Requirements and Running the code
 
-This code was tested on windows inside a python3.9 virtual environment (venv). To visualize the tree, `pydot` needs to be installed on the system and added to PATH in the envisronment variables.
+This code was tested on windows inside a python3.9 virtual environment (venv). To visualize the tree, `pydot` needs to be installed on the system and added to PATH in the envisronment variables. see [documentation](https://pypi.org/project/pydot/).
 
 To run the code, navigate to the root folder (that contains `src` and `out`) and run:
 
