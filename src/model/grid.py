@@ -4,8 +4,8 @@ from time import perf_counter_ns
 import numpy as np
 from model.errors import IllegalMove
 
-HUMAN = '1'
-AGENT = '2'
+HUMAN = 49
+AGENT = 50
 ROWS = 6
 COLUMNS = 7
 
@@ -43,7 +43,7 @@ class Grid():
 
     def __get_grid_str(self):
         arr = self.__grid.flatten()
-        s = np.join("",arr)
+        s = "".join(chr(i) for i in arr)
         return s
 
     def get_grid_array(self):
@@ -81,13 +81,13 @@ class Grid():
         
         return self.get_legal_moves().shape[0] == 0
 
+
+
     def __get_score_from_rows(self, rows):
         total = 0
         
-
         for row in rows:
-            row_str = np.join("",row)
-
+            row_str = "".join(chr(i) for i in row)
             score = 0
 
             for s in REG_AGENT_S.findall(row_str):
@@ -100,7 +100,6 @@ class Grid():
         return total
 
     def get_score(self):
-        start = perf_counter_ns()
         agent_score = 0
 
         # iterating through rows
@@ -121,8 +120,6 @@ class Grid():
         diag_arr = np.fliplr(self.__grid)
         diag_arr = [np.diag(diag_arr, k) for k in range(-1*ROWS + 1,COLUMNS)]
         agent_score += self.__get_score_from_rows(diag_arr)
-        duration = ( perf_counter_ns() - start) / 1e6
-        # print("score took :",duration,"ms.")
         return agent_score
     
     def __p_fail(self, n): # n = number of empty spaces
@@ -134,7 +131,7 @@ class Grid():
         total = 0
         
         for row in rows:
-            row_str = np.join("",row)
+            row_str = "".join(chr(i) for i in row)
             score = 0
             # offense mode
             for s in REG_AGENT_H.finditer(row_str):
@@ -154,12 +151,12 @@ class Grid():
                 # number of empty spaces
                 n = len(REG_ZERO.findall(s))
                 # probability of failure
-                # TODO: give 50% more weight to defense mode
                 p = 1.5 * self.__p_fail(n)
                 # expected score if no failure happened
                 x = len(s) - 3
                 # expected variable of score
-                score -= (1 - n * p) * x + n * p * (x - 1)
+                # TODO: give 50% more weight to defense mode
+                score -= 1.5 * ((1 - n * p) * x + n * p * (x - 1))
 
             total += score
         # this and then the actual score
