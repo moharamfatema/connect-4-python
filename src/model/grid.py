@@ -1,8 +1,8 @@
-from numba import jit 
 import re
 from time import perf_counter_ns
 import numpy as np
 from model.errors import IllegalMove
+from numba import jit
 
 HUMAN = 49
 AGENT = 50
@@ -18,7 +18,7 @@ REG_AGENT_S = re.compile("2{4,}")
 TERMINAL_REG = re.compile('^[12]{'+str(ROWS * COLUMNS)+'}') 
 REG_ZERO = re.compile("0")
 
-class Grid():
+class Grid(object):
     def __init__(self, grid_arr=None):
 
         if grid_arr is None:
@@ -46,6 +46,7 @@ class Grid():
         s = "".join(chr(i) for i in arr)
         return s
 
+    @property
     def get_grid_array(self):
         return self.__grid
 
@@ -82,56 +83,74 @@ class Grid():
         return self.get_legal_moves().shape[0] == 0
 
 
+    @staticmethod
+    def occurences(string, sub):
+        count = start = 0
+        while True:
+            start = string.find(sub,start) + 1
+            if start > 0:
+                count += 1
+            else:
+                return count
 
-    def __get_score_from_rows(self, rows):
+    @staticmethod
+    def __get_score_from_rows( rows):
         total = 0
         
         for row in rows:
-            row_str = "".join(chr(i) for i in row)
+            row_str = [chr(i) for i in row]
+            row_str = "".join(row_str)
             score = 0
 
             for s in REG_AGENT_S.findall(row_str):
-                score += (len(s) - 3)
+                score = score + (len(s) - 3)
             for s in REG_HUMAN_S.findall(row_str):
-                score -= (len(s) - 3)
+                score = score - (len(s) - 3)
 
-            total += score
+            total = total + score
 
         return total
 
     def get_score(self):
+        # s = perf_counter_ns()
         agent_score = 0
 
         # iterating through rows
         
-        agent_score += self.__get_score_from_rows(self.__grid)
+        agent_score = agent_score + Grid.__get_score_from_rows(self.__grid)
 
         # iterating through columns
         
-        agent_score += self.__get_score_from_rows(np.transpose(self.__grid))
+        agent_score = agent_score + Grid.__get_score_from_rows(np.transpose(self.__grid))
 
         # through diagonals
 
         diag_arr = [np.diag(self.__grid, k) for k in range(-1*ROWS + 1,COLUMNS)]
-        agent_score += self.__get_score_from_rows(diag_arr)
+        agent_score = agent_score + Grid.__get_score_from_rows(diag_arr)
 
         #through diagonals 2
 
         diag_arr = np.fliplr(self.__grid)
         diag_arr = [np.diag(diag_arr, k) for k in range(-1*ROWS + 1,COLUMNS)]
-        agent_score += self.__get_score_from_rows(diag_arr)
+        agent_score = agent_score + Grid.__get_score_from_rows(diag_arr)
+        # d = (perf_counter_ns() - s) / 1e6
+        # print("score took:",d,"ms.")
         return agent_score
     
-    def __p_fail(self, n): # n = number of empty spaces
+    @staticmethod
+    @jit(nopython=True, fastmath =True)
+
+    def __p_fail(n): # n = number of empty spaces
         return (1 / n) * ((n - 1) / n) ** (n - 1)
 
-    
-    def __get_heuristic_from_rows(self, rows):
+    @staticmethod
+    def __get_heuristic_from_rows(rows):
 
         total = 0
         
         for row in rows:
-            row_str = "".join(chr(i) for i in row)
+            row_str = [chr(i) for i in row]
+            row_str = "".join(row_str)
             score = 0
             # offense mode
             for s in REG_AGENT_H.finditer(row_str):
@@ -139,11 +158,11 @@ class Grid():
                 # number of empty spaces
                 n = len(REG_ZERO.findall(s))
                 # probability of failure
-                p = self.__p_fail(n)
+                p = Grid.__p_fail(n)
                 # expected score if no failure happened
                 x = len(s) - 3
                 # expected variable of score
-                score += (1 - n * p) * x + n * p * (x - 1)
+                score = score + (1 - n * p) * x + n * p * (x - 1)
             
             # defense mode
             for s in REG_HUMAN_H.finditer(row_str):
@@ -151,16 +170,16 @@ class Grid():
                 # number of empty spaces
                 n = len(REG_ZERO.findall(s))
                 # probability of failure
-                p = 1.5 * self.__p_fail(n)
+                p = Grid.__p_fail(n)
                 # expected score if no failure happened
                 x = len(s) - 3
                 # expected variable of score
                 # TODO: give 50% more weight to defense mode
-                score -= 1.5 * ((1 - n * p) * x + n * p * (x - 1))
+                score = score + 1.5 * ((1 - n * p) * x + n * p * (x - 1))
 
-            total += score
+            total = total + score
         # this and then the actual score
-        total += self.__get_score_from_rows(rows)
+        total = total + Grid.__get_score_from_rows(rows)
         return total
     
     def get_heuristic_value(self):
@@ -170,22 +189,22 @@ class Grid():
 
         # iterating through rows
         
-        agent_score += self.__get_heuristic_from_rows(self.__grid)
+        agent_score = agent_score + Grid.__get_heuristic_from_rows(self.__grid)
 
         # iterating through columns
         
-        agent_score += self.__get_heuristic_from_rows(np.transpose(self.__grid))
+        agent_score = agent_score + Grid.__get_heuristic_from_rows(np.transpose(self.__grid))
 
         # through diagonals
 
         diag_arr = [np.diag(self.__grid, k) for k in range(-1*ROWS + 1,COLUMNS)]
-        agent_score += self.__get_heuristic_from_rows(diag_arr)
+        agent_score = agent_score + Grid.__get_heuristic_from_rows(diag_arr)
 
         #through diagonals 2
 
         diag_arr = np.fliplr(self.__grid)
         diag_arr = [np.diag(diag_arr, k) for k in range(-1*ROWS + 1,COLUMNS)]
-        agent_score += self.__get_heuristic_from_rows(diag_arr)
+        agent_score = agent_score + Grid.__get_heuristic_from_rows(diag_arr)
         duration = (perf_counter_ns() - start) / 1e6
         # TODO: cleanup print("Heuristic function took",duration,"ms.")
         return agent_score

@@ -18,7 +18,7 @@ class StringState(State):
         return regex.match(self._representation) != None
 
     def get_grid_arr(self):
-        arr = np.array(list(self._representation),np.int8)
+        arr = np.array([ord(i) for i in list(self._representation)],np.ubyte)
         arr = np.reshape(arr,(ROWS,COLUMNS))
         return arr
 
