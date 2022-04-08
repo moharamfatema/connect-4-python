@@ -2,7 +2,7 @@ import re
 from time import perf_counter_ns
 import numpy as np
 from model.errors import IllegalMove
-from numba import jit
+from numba import jit, njit
 
 HUMAN = 49
 AGENT = 50
@@ -14,6 +14,31 @@ REG_AGENT_H = re.compile("(2(?!2{3,})|0(?!0{3,})){4,}")
 
 REG_HUMAN_S = re.compile("1{4,}")
 REG_AGENT_S = re.compile("2{4,}")
+
+AGENT_3 = ['2220','0222','2022','2202']
+HUMAN_3 = ['0111','1011','1101','1110']
+
+AGENT_2 = [
+    '0022','0202','0220',
+    '2002','2020',
+    '2200'
+    ]
+
+HUMAN_2 = [
+    '0011','0101','0110',
+    '1001','1010',
+    '1100'
+    ]
+
+AGENT_1 = [
+    '2000','0200','0020','0002'
+]
+
+HUMAN_1 = [
+    '1000','0100','0010','0001'
+]
+
+DEFENSE_WEIGHT = 1.2
 
 TERMINAL_REG = re.compile('^[12]{'+str(ROWS * COLUMNS)+'}') 
 REG_ZERO = re.compile("0")
@@ -46,7 +71,7 @@ class Grid(object):
         s = "".join(chr(i) for i in arr)
         return s
 
-    @property
+    
     def get_grid_array(self):
         return self.__grid
 
@@ -84,6 +109,7 @@ class Grid(object):
 
 
     @staticmethod
+    @njit
     def occurences(string, sub):
         count = start = 0
         while True:
@@ -102,11 +128,9 @@ class Grid(object):
             row_str = "".join(row_str)
             score = 0
 
-            for s in REG_AGENT_S.findall(row_str):
-                score = score + (len(s) - 3)
-            for s in REG_HUMAN_S.findall(row_str):
-                score = score - (len(s) - 3)
-
+            score += Grid.occurences(row_str, '2222')
+            score -= Grid.occurences(row_str, '1111')
+            
             total = total + score
 
         return total
@@ -140,10 +164,11 @@ class Grid(object):
     @staticmethod
     @jit(nopython=True, fastmath =True)
 
-    def __p_fail(n): # n = number of empty spaces
+    def __p_fail(n) -> float: # n = number of empty spaces
         return (1 / n) * ((n - 1) / n) ** (n - 1)
 
     @staticmethod
+
     def __get_heuristic_from_rows(rows):
 
         total = 0
@@ -152,30 +177,42 @@ class Grid(object):
             row_str = [chr(i) for i in row]
             row_str = "".join(row_str)
             score = 0
-            # offense mode
-            for s in REG_AGENT_H.finditer(row_str):
-                s = s.group()
-                # number of empty spaces
-                n = len(REG_ZERO.findall(s))
-                # probability of failure
-                p = Grid.__p_fail(n)
-                # expected score if no failure happened
-                x = len(s) - 3
-                # expected variable of score
-                score = score + (1 - n * p) * x + n * p * (x - 1)
-            
-            # defense mode
-            for s in REG_HUMAN_H.finditer(row_str):
-                s = s.group()
-                # number of empty spaces
-                n = len(REG_ZERO.findall(s))
-                # probability of failure
-                p = Grid.__p_fail(n)
-                # expected score if no failure happened
-                x = len(s) - 3
-                # expected variable of score
-                # TODO: give 50% more weight to defense mode
-                score = score + 1.5 * ((1 - n * p) * x + n * p * (x - 1))
+
+            # 3 empty spaces
+            n = 3
+            p = Grid.__p_fail(n)
+
+            count = 0
+            for sub in AGENT_3: count += Grid.occurences(row_str,sub)
+            score = score + count * ((1 - n * p)  )
+
+            count = 0
+            for sub in HUMAN_3: count += Grid.occurences(row_str,sub)
+            score = score + DEFENSE_WEIGHT * count * ((1 - n * p)  )
+
+            # 2 empty spaces
+            n = 2
+            p = Grid.__p_fail(n)
+
+            count = 0
+            for sub in AGENT_2: count += Grid.occurences(row_str,sub)
+            score = score + count * ((1 - n * p)  )
+
+            count = 0
+            for sub in HUMAN_2: count += Grid.occurences(row_str,sub)
+            score = score + DEFENSE_WEIGHT * count * ((1 - n * p)  )
+
+            # 1 empty spaces
+            n = 1
+            p = Grid.__p_fail(n)
+
+            count = 0
+            for sub in AGENT_1: count += Grid.occurences(row_str,sub)
+            score = score + count * ((1 - n * p)  )
+
+            count = 0
+            for sub in HUMAN_1: count += Grid.occurences(row_str,sub)
+            score = score + DEFENSE_WEIGHT * count * ((1 - n * p)  )
 
             total = total + score
         # this and then the actual score

@@ -21,8 +21,7 @@ class State(ABC):
 
     def eval(self):
         # TODO: return to heuristic
-        return self._grid.get_score()
-        '''
+
         if self.is_terminal():
             # returns the actual score of the current state
             return self._grid.get_score()
@@ -33,7 +32,7 @@ class State(ABC):
             if self._heuristic is None:
                 self._heuristic = self._grid.get_heuristic_value()
             return self._heuristic
-        '''
+        
     @abstractmethod
     def get_children(self,init) -> List:
         children = []
