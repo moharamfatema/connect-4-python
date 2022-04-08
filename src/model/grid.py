@@ -1,7 +1,7 @@
+from numba import jit 
 import re
 from time import perf_counter_ns
 import numpy as np
-
 from model.errors import IllegalMove
 
 HUMAN = 1
@@ -12,7 +12,7 @@ COLUMNS = 7
 REG_HUMAN_H = re.compile("(1(?!1{3,})|0(?!0{3,})){4,}")
 REG_AGENT_H = re.compile("(2(?!2{3,})|0(?!0{3,})){4,}")
 
-REG_HUMAN_s = re.compile("1{4,}")
+REG_HUMAN_S = re.compile("1{4,}")
 REG_AGENT_S = re.compile("2{4,}")
 
 TERMINAL_REG = re.compile('^[12]{'+str(ROWS * COLUMNS)+'}') 
@@ -87,11 +87,12 @@ class Grid():
 
         for row in rows:
             row_str = "".join(str(i) for i in row)
+
             score = 0
 
             for s in REG_AGENT_S.findall(row_str):
                 score += (len(s) - 3)
-            for s in REG_HUMAN_s.findall(row_str):
+            for s in REG_HUMAN_S.findall(row_str):
                 score -= (len(s) - 3)
 
             total += score
@@ -121,7 +122,7 @@ class Grid():
         diag_arr = [np.diag(diag_arr, k) for k in range(-1*ROWS + 1,COLUMNS)]
         agent_score += self.__get_score_from_rows(diag_arr)
         duration = ( perf_counter_ns() - start) / 1e6
-        print("score took :",duration,"ms.")
+        # print("score took :",duration,"ms.")
         return agent_score
     
     def __p_fail(self, n): # n = number of empty spaces
@@ -165,6 +166,7 @@ class Grid():
         total += self.__get_score_from_rows(rows)
         return total
     
+    @jit(nopython=True, parallel=True)
     def get_heuristic_value(self):
         # TODO: optimize (takes too long)
         start = perf_counter_ns()

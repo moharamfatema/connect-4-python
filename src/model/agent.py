@@ -155,7 +155,7 @@ class Agent():
             (t, val) = self.__max(state,0)
         
         # remove temp root
-        # self.__tree.root = t.get_tree_id()
+        self.__tree.root = state.get_tree_id()
         # self.__tree.remove_node('root')
         return t
 

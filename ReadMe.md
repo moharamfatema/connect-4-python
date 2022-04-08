@@ -17,3 +17,14 @@
     |_img
 ```
 
+## Requirements and Running the code
+
+This code was tested on windows inside a python3 virtual environment (venv). To visualize the tree, `pydot` needs to be installed on the system and added to PATH in the envisronment variables.
+
+To run the code, navigate to the root folder (that contains `src` and `out`) and run:
+
+```bash
+.\env\Scripts\activate
+pip install -r requirements.txt
+py .\src\main.py
+```

@@ -165,8 +165,6 @@ class Game:
                 self.__state_grid = self.__agent.move(self.__state_grid, self.__frame.alpha_beta_pruning())
                 self.__frame.show_score(self.__state_grid.get_score())
 
-                # output the tree
-                self.__agent.tree_to_svg("out\\tree")
                 self.__frame.show_time()
                 self.__turn = HUMAN
 
