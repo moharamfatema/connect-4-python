@@ -5,6 +5,7 @@ from model.errors import IllegalMove
 
 HUMAN = 49
 AGENT = 50
+EMPTY = 48
 ROWS = 6
 COLUMNS = 7
 
@@ -17,36 +18,13 @@ REG_AGENT_S = re.compile("2{4,}")
 TERMINAL_REG = re.compile('^[12]{'+str(ROWS * COLUMNS)+'}') 
 REG_ZERO = re.compile("0")
 
-AGENT_3 = ['2220','0222','2022','2202']
-HUMAN_3 = ['0111','1011','1101','1110']
-
-AGENT_2 = [
-    '0022','0202','0220',
-    '2002','2020',
-    '2200'
-    ]
-
-HUMAN_2 = [
-    '0011','0101','0110',
-    '1001','1010',
-    '1100'
-    ]
-
-AGENT_1 = [
-    '2000','0200','0020','0002'
-]
-
-HUMAN_1 = [
-    '1000','0100','0010','0001'
-]
-
 DEFENSE_WEIGHT = 1.2
 
 class Grid():
     def __init__(self, grid_arr=None):
 
         if grid_arr is None:
-            self.__grid = np.zeros((ROWS, COLUMNS), np.ubyte)
+            self.__grid = np.full((ROWS, COLUMNS),EMPTY, np.ubyte)
         else:
             self.__grid = grid_arr
         
@@ -54,7 +32,7 @@ class Grid():
         if column >= COLUMNS:
             raise IndexError('Column', column,'is out of bounds for this board.')
         for i in range(ROWS - 1, -1, -1):
-            if self.__grid[int(i)][int(column)] == 0:
+            if self.__grid[int(i)][int(column)] == EMPTY:
                 return i
         return None
 
@@ -151,7 +129,6 @@ class Grid():
         return total
 
     def get_score(self):
-        start = perf_counter_ns()
         agent_score = 0
 
         # iterating through rows
@@ -172,8 +149,7 @@ class Grid():
         diag_arr = np.fliplr(self.__grid)
         diag_arr = [np.diag(diag_arr, k) for k in range(-1*ROWS + 1,COLUMNS)]
         agent_score += Grid.__get_score_from_rows(diag_arr)
-        duration = ( perf_counter_ns() - start) / 1e6
-        # print("score took :",duration,"ms.")
+
         return agent_score
     
     @staticmethod
@@ -206,72 +182,20 @@ class Grid():
                 # number of empty spaces
                 n = len(REG_ZERO.findall(s))
                 # probability of failure
-                # TODO: give 50% more weight to defense mode
                 p =  Grid.__p_fail(n)
                 # expected score if no failure happened
                 x = len(s) - 3
                 # expected variable of score
-                score -= 1.5 * ((1 - n * p) * x + n * p * (x - 1))
+                # TODO: give 50% more weight to defense mode
+                score -= DEFENSE_WEIGHT * ((1 - n * p) * x + n * p * (x - 1))
 
             total += score
         # this and then the actual score
         total += Grid.__get_score_from_rows(rows)
         return total
 
-    @staticmethod
-    def __get_heuristic_from_rows_manual(rows): # unused
-
-        total = 0
-        
-        for row in rows:
-            row_str = [chr(i) for i in row]
-            row_str = "".join(row_str)
-            score = 0
-
-            # 3 empty spaces
-            n = 3
-            p = Grid.__p_fail(n)
-
-            count = 0
-            for sub in AGENT_3: count += Grid.occurences(row_str,sub)
-            score = score + count * ((1 - n * p)  )
-
-            count = 0
-            for sub in HUMAN_3: count += Grid.occurences(row_str,sub)
-            score = score + DEFENSE_WEIGHT * count * ((1 - n * p)  )
-
-            # 2 empty spaces
-            n = 2
-            p = Grid.__p_fail(n)
-
-            count = 0
-            for sub in AGENT_2: count += Grid.occurences(row_str,sub)
-            score = score + count * ((1 - n * p)  )
-
-            count = 0
-            for sub in HUMAN_2: count += Grid.occurences(row_str,sub)
-            score = score + DEFENSE_WEIGHT * count * ((1 - n * p)  )
-
-            # 1 empty spaces
-            n = 1
-            p = Grid.__p_fail(n)
-
-            count = 0
-            for sub in AGENT_1: count += Grid.occurences(row_str,sub)
-            score = score + count * ((1 - n * p)  )
-
-            count = 0
-            for sub in HUMAN_1: count += Grid.occurences(row_str,sub)
-            score = score + DEFENSE_WEIGHT * count * ((1 - n * p)  )
-
-            total = total + score
-        # this and then the actual score
-        total = total + Grid.__get_score_from_rows(rows)
-        return total
-    
     def get_heuristic_value(self):
         # TODO: optimize (takes too long)
-        start = perf_counter_ns()
         agent_score = 0
 
         # iterating through rows
@@ -292,8 +216,7 @@ class Grid():
         diag_arr = np.fliplr(self.__grid)
         diag_arr = [np.diag(diag_arr, k) for k in range(-1*ROWS + 1,COLUMNS)]
         agent_score += Grid.__get_heuristic_from_rows(diag_arr)
-        duration = (perf_counter_ns() - start) / 1e6
-        # TODO: cleanup print("Heuristic function took",duration,"ms.")
+
         return agent_score
         
     def get_children(self, turn):

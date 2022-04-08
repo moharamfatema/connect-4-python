@@ -46,7 +46,10 @@ class MainFrame():
     def print_tree(self):
         self.__print_tree_btn['text'] = "Loading Tree..."
         self.__print_tree_btn['state'] = DISABLED
-        self.__agent.print_tree()
+        try:
+            self.__agent.print_tree()
+        except:
+            pass
         self.__print_tree_btn['state'] = NORMAL
         self.__print_tree_btn['text'] = "Print Tree"
 

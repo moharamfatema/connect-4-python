@@ -3,7 +3,7 @@ import pygame as pg
 from random import randint
 # import other modules
 from model.errors import IllegalMove
-from model.grid import AGENT, HUMAN, Grid
+from model.grid import AGENT, HUMAN, Grid, EMPTY
 from model.agent import Agent
 from view.main_frame import MainFrame
 
@@ -146,7 +146,7 @@ class Game:
             for i in range(NO_ROWS):
                 for j in range(NO_COLUMNS):
                     p = self.__state_grid.get_grid_array()[i][j] 
-                    if(p != 0):
+                    if(p != EMPTY):
                         p_x, p_y = self.__move_to_row_column(i, j)
                         self.__place_player(p, p_x, p_y)
 

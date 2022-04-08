@@ -5,7 +5,7 @@ from model.state.string_state import StringState
 from model.state.state import State
 from treelib import Node, Tree
 from time import perf_counter
-import pydot as pd
+import pydot_ng as pd
 
 class Agent():
     def __init__(self, max_depth = 5):
@@ -149,7 +149,6 @@ class Agent():
         self.__tree.create_node('root','root')
 
         if alpha_beta_pruning:
-            self.__max_depth += 1
             (t, val) = self.__max(state,0,-inf,inf)
         else:
             (t, val) = self.__max(state,0)
@@ -173,15 +172,13 @@ class Agent():
 
     def dump_tree(self, file_name = 'tree.json'):
         file = open(file_name,'w')
-        # TODO: json format is not right
         json.dump(self.__tree.to_dict(sort= False), file)
         file.close()
 
     def tree_to_svg(self,filename_no_extension='out/tree'):
-        # TODO:
         filename = filename_no_extension+".dot"
         self.__tree.to_graphviz(filename)
-        dot = pd.graph_from_dot_file(filename)[0]
+        dot = pd.graph_from_dot_file(filename)
         filename = filename_no_extension+".svg"
         dot.write_svg(filename)
 
