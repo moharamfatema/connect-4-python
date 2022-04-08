@@ -8,7 +8,7 @@ from time import perf_counter
 import pydot as pd
 
 class Agent():
-    def __init__(self, max_depth = 3):
+    def __init__(self, max_depth = 5):
         self.__explored = {}
         self.__max_depth = max_depth
         self.__tree = Tree()
@@ -187,6 +187,9 @@ class Agent():
 
     def get_time(self):
         return self.__time
+
+    def set_max_depth(self, n):
+        self.__max_depth = n
 '''
 tree structure:
 (value, id, parent)

@@ -1,4 +1,3 @@
-from numba import jit 
 import re
 from time import perf_counter_ns
 import numpy as np
@@ -166,7 +165,6 @@ class Grid():
         total += self.__get_score_from_rows(rows)
         return total
     
-    @jit(nopython=True, parallel=True)
     def get_heuristic_value(self):
         # TODO: optimize (takes too long)
         start = perf_counter_ns()

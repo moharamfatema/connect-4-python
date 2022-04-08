@@ -6,25 +6,27 @@ from tkinter import DISABLED, ttk, LEFT, Button, NORMAL
 from model.agent import Agent
 import platform
 
-WIDTH = 230
-HEIGHT = 220
+WIDTH = 420
+HEIGHT = 310
+
+
 class MainFrame():
 
     def __init__(self, agent: Agent) -> None:
         self.__agent = agent
-        
+
         self.__root = ThemedTk(theme='breeze')
         self.__root.title("Connect 4 | Control Panel")
         self.__root.geometry(str(WIDTH)+'x'+str(HEIGHT))
-        
+
         # set driver for pygame
-        self.__embed = tk.Frame(self.__root,width= WIDTH, height= HEIGHT)
-        self.__embed.pack(side = LEFT) #packs window to the left
+        self.__embed = tk.Frame(self.__root, width=WIDTH, height=HEIGHT)
+        self.__embed.pack(side=LEFT)  # packs window to the left
 
         os.environ['SDL_WINDOWID'] = str(self.__embed.winfo_id())
         if platform.system == "Windows":
             os.environ['SDL_VIDEODRIVER'] = str(self.__embed.winfo_id())
-        self.__embed.grid(columnspan = (600), rowspan = 600) # Adds grid
+        self.__embed.grid(columnspan=(600), rowspan=600)  # Adds grid
 
         self.setup()
 
@@ -48,6 +50,10 @@ class MainFrame():
         self.__print_tree_btn['state'] = NORMAL
         self.__print_tree_btn['text'] = "Print Tree"
 
+    def change_depth(self):
+        d = int(self.__depth_in.get())
+        if d > 0 and d < 7:self.__agent.set_max_depth(d)
+        
 
     def setup(self):
 
@@ -73,8 +79,13 @@ class MainFrame():
             text="Print Tree",
             command=self.print_tree
         )
+        # max depth
+        self.__depth_lbl = ttk.Label(input_frame, text="Maximum Depth")
+        self.__depth_in = ttk.Entry(input_frame)
+        self.__depth_btn = ttk.Button(
+            input_frame, text='Change Maximium Depth', command=self.change_depth)
 
-        # time 
+        # time
         self.__time_lbl = ttk.Label(input_frame, text="")
         self.__score_lbl = ttk.Label(input_frame, text="")
 
@@ -82,17 +93,20 @@ class MainFrame():
         input_frame.grid(column=0, row=0, padx=20, pady=20)
 
         self.__alpha_beta_check.grid(column=0, row=1, sticky=tk.W)
-        self.__show_tree_btn.grid(column=0, row=2,sticky=tk.W)
-        self.__print_tree_btn.grid(column=0, row=3,sticky=tk.W)
+        self.__show_tree_btn.grid(column=0, row=2, sticky=tk.W)
+        self.__print_tree_btn.grid(column=1, row=2, sticky=tk.W)
+        self.__depth_lbl.grid(column=0, row=4, sticky=tk.W)
+        self.__depth_in.grid(column=1, row=4, sticky=tk.W)
+        self.__depth_btn.grid(column=0, row=5, sticky=tk.W)
 
-        self.__time_lbl.grid(column=0, row=4,sticky=tk.W)
-        self.__score_lbl.grid(column=0,row = 5, sticky=tk.W)
-
+        self.__time_lbl.grid(column=0, row=6, sticky=tk.W)
+        self.__score_lbl.grid(column=0, row=7, sticky=tk.W)
 
         self.__root.update()
 
     def show_time(self):
-        self.__time_lbl['text'] = "Time = " + str(round(self.__agent.get_time(),3)) + " second(s)."
+        self.__time_lbl['text'] = "Time = " + \
+            str(round(self.__agent.get_time(), 3)) + " second(s)."
 
     def show_score(self, score):
         self.__score_lbl['text'] = "score = " + str(-1 * score)
