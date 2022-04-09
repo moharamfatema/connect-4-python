@@ -170,7 +170,7 @@ class Grid():
                 # number of empty spaces
                 n = len(REG_ZERO.findall(s))
                 # probability of failure
-                p = Grid.__p_fail(n)
+                p = DEFENSE_WEIGHT*Grid.__p_fail(n)
                 # expected score if no failure happened
                 x = len(s) - 3
                 # expected variable of score

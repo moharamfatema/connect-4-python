@@ -6,6 +6,8 @@ from model.errors import IllegalMove
 from model.grid import AGENT, HUMAN, Grid, EMPTY
 from model.agent import Agent
 from view.main_frame import MainFrame
+import numpy as np
+from numpy import ubyte
 
 # define constants 
 TITLE = 'Connect 4'
@@ -134,6 +136,7 @@ class Game:
         # randomly pick a starter
         if randint(0,1) == 0:
             self.__state_grid.make_a_move(NO_COLUMNS / 2,AGENT)
+
 
         while self.__running:
             

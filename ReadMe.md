@@ -6,7 +6,7 @@ Name: Fatema Moharam
 ID  : 6655
 ```
 
-AI agent plays against the player until the board is full. The score of each player is the total number of *fours-in-a-row*. The game dimensions are as follows (rows = 6, columns = 6).
+AI agent plays against the player until the board is full. The score of each player is the total number of *fours-in-a-row*. The game dimensions are as follows (rows = 6, columns = 7).
 
 [Link to the project public repo on *Github*.](https://github.com/moharamfatema/connect-4-python)
 
@@ -30,7 +30,7 @@ AI agent plays against the player until the board is full. The score of each pla
 
 ## Requirements and Running the code
 
-This code was tested on windows inside a python3.9 virtual environment (venv). To visualize the tree, `pydot` needs to be installed on the system and added to PATH in the envisronment variables. see [documentation](https://pypi.org/project/pydot/).
+This code was tested on windows inside a python3.9 virtual environment (venv). To visualize the tree, `pydot` needs to be installed on the system and added to PATH in the environment variables. see [documentation](https://pypi.org/project/pydot/).
 
 To run the code, navigate to the root folder (that contains `src` and `out`) and run:
 
@@ -122,9 +122,9 @@ When calculating the expected score, the expected `HUMAN` score should be given 
     stores( key: value) pairs.  
     Unique keys for each explored state being what the board looks like and whose turn it is represented as a ``string``.  
     Values: The minimax function return value.  
-    The explored dict is cleared at the beggining of each turn.
+    The explored dict is cleared at the beginning of each turn.
 
-- Tree : from the `treelib` package. Each node in the tree is a `Node` class storing the heuristic/score value of the minimax node, and a unigue tree ID that stores the unique key used in the explored dict, in addition to an indicator to whether the node is a duplicate (similar to one of it's cousins). see [documentation](https://treelib.readthedocs.io/en/latest/).
+- Tree : from the `treelib` package. Each node in the tree is a `Node` class storing the heuristic/score value of the minimax node, and a unique tree ID that stores the unique key used in the explored dict, in addition to an indicator to whether the node is a duplicate (similar to one of it's cousins). see [documentation](https://treelib.readthedocs.io/en/latest/).
 
 - grid : The score and heuristic calculations, and the `Game` class use a representation of the board as a **2D `numpy` array of Bytes**. The single byte stores an `ascii` value of what the state sees as a string.
 
