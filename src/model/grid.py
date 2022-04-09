@@ -9,6 +9,9 @@ EMPTY = 48
 ROWS = 6
 COLUMNS = 7
 
+USER_COL = [0,6,1,5,2,4,3]
+AGENT_COL = [3,2,4,1,5,0,6]
+
 REG_HUMAN_H = re.compile("(1(?!1{3,})|0(?!0{3,})){4,}")
 REG_AGENT_H = re.compile("(2(?!2{3,})|0(?!0{3,})){4,}")
 
@@ -67,9 +70,10 @@ class Grid():
         next_grid.make_a_move(column, player)
         return next_grid
 
-    def get_legal_moves(self):
+    def get_legal_moves(self, turn):
         columns = np.array([],np.int8)
-        for i in range(COLUMNS):
+        col = USER_COL if turn == HUMAN else AGENT_COL
+        for i in col:
             if self.get_next_row(i) is not None:
                 columns = np.append(columns,i)
         return columns
@@ -81,7 +85,7 @@ class Grid():
             # regex for either ones or twos 42 times
             return TERMINAL_REG.match(self._representation) != None
         
-        return self.get_legal_moves().shape[0] == 0
+        return self.get_legal_moves(AGENT).shape[0] == 0
 
     @staticmethod
     def __get_score_from_rows_old(rows):
@@ -220,7 +224,7 @@ class Grid():
         return agent_score
         
     def get_children(self, turn):
-        moves = self.get_legal_moves()
+        moves = self.get_legal_moves(turn)
         children = []
         for c in moves:
             children.append(self.make_a_move_next_grid(c,turn))
